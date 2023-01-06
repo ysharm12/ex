@@ -1,0 +1,28 @@
+import org.apache.spark.sql.functions._
+
+val df = Seq(
+  (1, "Alice", "F"),
+  (2, "Bob", "M"),
+  (3, "Charlie", "M"),
+  (4, "Dave", "M"),
+  (5, "Eve", "F")
+).toDF("id", "name", "gender")
+
+val columnNames = df.columns
+
+for (columnName <- columnNames) {
+  val path = s"/path/to/$columnName.csv"
+  try {
+    // Select the column
+    val column = df.select(columnName)
+    // Save the column to a CSV file
+    column.write.csv(path)
+    println(s"Successfully saved $columnName to $path")
+    // Delete the CSV file
+    if (Files.exists(Paths.get(path))) {
+      Files.delete(Paths.get(path))
+    }
+  } catch {
+    case e: Exception => println(s"Error saving column $columnName: ${e.getMessage}")
+  }
+}
